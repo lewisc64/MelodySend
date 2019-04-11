@@ -1,0 +1,8 @@
+body {
+  margin: 0;
+}
+
+canvas#pianoroll {
+  left: 0;
+  top: 0;
+}

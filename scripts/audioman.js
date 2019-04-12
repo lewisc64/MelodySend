@@ -2,7 +2,7 @@ let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const sampleRate = audioContext.sampleRate;
 const channels = 2;
 
-function playWaveform(func, duration) {
+function playWaveform(func, duration, volume=0.2, fadepadding=0.025) {
   
   let samples = duration * sampleRate;
   
@@ -19,8 +19,13 @@ function playWaveform(func, duration) {
   
   source.buffer = buffer;
   
+  const low = 0.00001;
+  
   let gainNode = audioContext.createGain();
-  gainNode.gain.value = 0.2;
+  gainNode.gain.setValueAtTime(low, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(volume, audioContext.currentTime + fadepadding);
+  gainNode.gain.setValueAtTime(volume, audioContext.currentTime + duration - fadepadding);
+  gainNode.gain.exponentialRampToValueAtTime(low, audioContext.currentTime + duration);
   gainNode.connect(audioContext.destination);
   
   source.connect(gainNode);

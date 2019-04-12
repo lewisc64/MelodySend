@@ -256,9 +256,9 @@ function getLink() {
   let out = [];
   
   for (let note of notes) {
-    for (let key in note) {
-      out.push(note[key] / cellSize);
-    }
+    out.push(note.x / cellSize);
+    out.push(note.y / cellSize);
+    out.push(note.width / cellSize);
   }
   
   return window.location.href.split("?")[0] + "?notes=" + encodeURI(out.join(","));
@@ -275,18 +275,11 @@ function loadFromParams() {
   }
   
   const values = param.split(",");
-  
-  let note;
-  for (let i = 0; i < values.length; i++) {
-    if (!note || i % Object.keys(note).length == 0) {
-      if (note) {
-        notes.push(note);
-      }
-      note = createNote();
-    }
-    note[Object.keys(note)[i % Object.keys(note).length]] = parseInt(values[i]) * cellSize;
+  for (let i = 0; i <= values.length - 3; i += 3) {
+    
+    notes.push(createNote(parseInt(values[i]) * cellSize, parseInt(values[i + 1]) * cellSize, parseInt(values[i + 2]) * cellSize, cellSize));
+    
   }
-  notes.push(note);
 }
 
 function setup() {

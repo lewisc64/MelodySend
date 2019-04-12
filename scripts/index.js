@@ -6,6 +6,12 @@ let timescale = [4, 4];
 let bpm = 140;
 let playing = false;
 
+let playLine = null;
+let playLineFrom = null;
+let playLineTo = null;
+let playStart = null;
+let playEnd = null;
+
 let cellSize = 14;
 
 canvas.height = cellSize * frequencies.length;
@@ -49,22 +55,71 @@ function drawNotes() {
   }
 }
 
+function cellsToDuration(cells) {
+  return timescale[1] / bpm / (timescale[0] * timescale[1]) * 60 * cells;
+}
+
+function pixelsToDuration(pixels) {
+  return cellsToDuration(pixels / cellSize);
+}
+
 function playNote(note, duration) {
   let i = Math.floor(canvas.height / cellSize) - Math.floor(note.y / cellSize) - 1;
   if (!duration) {
-    duration = timescale[1] / bpm / (timescale[0] * timescale[1]) * Math.floor(note.width / cellSize) * 60;
+    duration = pixelsToDuration(note.width);
   }
   playSine(frequencies[i], duration);
 }
 
-function play(x=0, played=0) {
+function drawPlayLine() {
+  let x = playLineFrom + (playLineTo - playLineFrom) * ((new Date().getTime() - playStart.getTime()) / (playEnd.getTime() - playStart.getTime()));
+  if (x < 0 || x > playLineTo) {
+    destroyPlayLine()
+    return;
+  }
+  context.beginPath();
+  context.strokeStyle = "#FF0000";
+  context.lineWidth = 1;
+  context.moveTo(x + 0.5, 0);
+  context.lineTo(x + 0.5, canvas.height);
+  context.stroke();
+}
+
+function setupPlayLine(start=0) {
+  playLineFrom = start;
+  playLine = playLineFrom;
+  playStart = new Date();
+  let lastNote = getLastNote();
+  playLineTo = lastNote.x + lastNote.width;
+  playEnd = new Date(Date.now() + pixelsToDuration(playLineTo) * 1000);
+}
+
+function destroyPlayLine() {
+  playLine = null;
+}
+
+function stop() {
+  playing = false;
+  document.getElementById("play").textContent = "Play";
+  destroyPlayLine();
+  return;
+}
+
+function play(x=0, end=null) {
+  
+  if (notes.length == 0) {
+    stop();
+    return;
+  }
   
   if (!playing) {
     if (x == 0) {
       document.getElementById("play").textContent = "Stop";
       playing = true;
+      setupPlayLine();
+      let lastNote = getLastNote();
+      end = lastNote.x + lastNote.width;
     } else {
-      document.getElementById("play").textContent = "Play";
       return;
     }
   }
@@ -72,19 +127,25 @@ function play(x=0, played=0) {
   for (let note of notes) {
     if (note.x == x) {
       playNote(note);
-      played++;
     }
   }
   
   x += cellSize;
   
-  if (played < notes.length) {
+  if (x <= end) {
     setTimeout(function () {
-      play(x, played);
-    }, timescale[1] / bpm / (timescale[0] * timescale[1]) * 60 * 1000);
+      play(x, end);
+    }, cellsToDuration(1) * 1000);
   } else {
-    document.getElementById("play").textContent = "Play";
-    playing = false;
+    stop();
+  }
+}
+
+function togglePlay() {
+  if (playing) {
+    stop();
+  } else {
+    play();
   }
 }
 
@@ -137,7 +198,7 @@ function handleMouseEvent(type, e) {
         if (draggingWidth) {
           canvas.style.cursor = "ew-resize";
         } else {
-          canvas.style.cursor = "all-scroll";
+          canvas.style.cursor = "move";
         }
         
       } else if (e.button == 2) {
@@ -146,7 +207,7 @@ function handleMouseEvent(type, e) {
       
     } else if (e.button == 0) {
       
-      canvas.style.cursor = "all-scroll";
+      canvas.style.cursor = "move";
       
       let note = createNote(mouseX, mouseY, lastNoteWidth, cellSize);
       notes.push(note);
@@ -248,6 +309,10 @@ function editloop() {
   drawGrid();
   drawNotes();
   
+  if (playLine !== null) {
+    drawPlayLine();
+  }
+  
   requestAnimationFrame(editloop);
 }
 
@@ -306,11 +371,7 @@ function setup() {
   });
   
   document.getElementById("play").addEventListener("click", function () {
-    if (playing) {
-      playing = false;
-    } else {
-      play();
-    }
+    togglePlay();
   });
   
   document.getElementById("reset").addEventListener("click", function () {

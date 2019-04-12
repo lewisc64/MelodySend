@@ -32,13 +32,13 @@ function playWaveform(func, duration, volume=0.2, fadepadding=0.025) {
   source.start();
 }
 
-function playSine(frequency, duration) {
+async function playSine(frequency, duration) {
   playWaveform(function (n) {
     return Math.sin(n * 2 * Math.PI * frequency / sampleRate);
   }, duration); 
 }
 
-function playSaw(frequency, duration) {
+async function playSaw(frequency, duration) {
   playWaveform(function (n) {
     return ((n % (sampleRate / frequency)) * (frequency / sampleRate) * 2 - 1);
   }, duration); 

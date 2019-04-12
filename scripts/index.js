@@ -4,6 +4,7 @@ let context = canvas.getContext("2d");
 let notes = [];
 let timescale = [4, 4];
 let bpm = 140;
+let playing = false;
 
 let cellSize = 14;
 
@@ -58,6 +59,16 @@ function playNote(note, duration) {
 
 function play(x=0, played=0) {
   
+  if (!playing) {
+    if (x == 0) {
+      document.getElementById("play").textContent = "Stop";
+      playing = true;
+    } else {
+      document.getElementById("play").textContent = "Play";
+      return;
+    }
+  }
+  
   for (let note of notes) {
     if (note.x == x) {
       playNote(note);
@@ -71,6 +82,9 @@ function play(x=0, played=0) {
     setTimeout(function () {
       play(x, played);
     }, timescale[1] / bpm / (timescale[0] * timescale[1]) * 60 * 1000);
+  } else {
+    document.getElementById("play").textContent = "Play";
+    playing = false;
   }
 }
 
@@ -299,7 +313,11 @@ function setup() {
   });
   
   document.getElementById("play").addEventListener("click", function () {
-    play();
+    if (playing) {
+      playing = false;
+    } else {
+      play();
+    }
   });
   
   document.getElementById("reset").addEventListener("click", function () {

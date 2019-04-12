@@ -4,8 +4,6 @@ const channels = 2;
 
 function playWaveform(func, duration) {
   
-  audioContext.resume();
-  
   let samples = duration * sampleRate;
   
   let buffer = audioContext.createBuffer(channels, samples, sampleRate);

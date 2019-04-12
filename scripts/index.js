@@ -1,5 +1,5 @@
 let canvas = document.getElementById("pianoroll");
-let context = canvas.getContext("2d");
+let context = canvas.getContext("2d", { alpha: false });
 
 let notes = [];
 let timescale = [4, 4];
@@ -268,9 +268,9 @@ function drawGrid() {
   context.fillStyle = "#EEEEEE";
   context.fillRect(0, 0, canvas.width, canvas.height);
   
+  context.beginPath();
+  
   for (let y = 0; y < canvas.height; y += cellSize) {
-    
-    context.beginPath();
     
     context.strokeStyle = "#DDDDDD";
     context.lineWidth = 1;
@@ -278,28 +278,27 @@ function drawGrid() {
     context.moveTo(0, y + 0.5);
     context.lineTo(canvas.width, y + 0.5);
     
-    context.stroke();
-    
   }
   
-  for (let x = 0; x < canvas.width; x += cellSize) {
+  context.stroke();
+  
+  const lines = [
+    ["#CCCCCC", cellSize],
+    ["#AAAAAA", cellSize * timescale[1]],
+    ["#777777", cellSize * timescale[1] * timescale[0]],
+  ];
+  
+  for (let line of lines) {
     
     context.beginPath();
+    context.strokeStyle = line[0];
     
-    context.lineWidth = 1;
-    if (x % (timescale[0] * timescale[1] * cellSize) == 0) {
-      context.strokeStyle = "#777777";
-    } else if (x % (timescale[1] * cellSize) == 0) {
-      context.strokeStyle = "#AAAAAA";
-    } else {
-      context.strokeStyle = "#CCCCCC";
+    for (let x = 0; x < canvas.width; x += line[1]) {
+      context.moveTo(x + 0.5, 0);
+      context.lineTo(x + 0.5, canvas.height);
     }
     
-    context.moveTo(x + 0.5, 0);
-    context.lineTo(x + 0.5, canvas.height);
-    
     context.stroke();
-    
   }
   
 }

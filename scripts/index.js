@@ -5,7 +5,7 @@ let notes = [];
 let timescale = [4, 4];
 let bpm = 140;
 
-let cellSize = 16;
+let cellSize = 14;
 
 canvas.height = cellSize * frequencies.length;
 canvas.width = cellSize * 4 ** 3;
@@ -16,9 +16,11 @@ let dragging;
 let draggingWidth = false;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
+let shift = false;
 let lastNoteWidth = cellSize * timescale[1];
 let prevX;
 let prevY;
+let prevWidth;
 
 function createNote(x=0, y=0, width=0, height=0) {
   let note = {
@@ -37,7 +39,7 @@ function drawNote(note) {
   context.fillRect(note.x, note.y, note.width, note.height);
   context.fillStyle = context.strokeStyle;
   context.fillRect(note.x + note.width - cellSize / 2, note.y, cellSize / 2, note.height);
-  context.strokeRect(note.x, note.y, note.width, note.height);
+  context.strokeRect(note.x + 0.5, note.y + 0.5, note.width, note.height);
 }
 
 function drawNotes() {
@@ -47,8 +49,10 @@ function drawNotes() {
 }
 
 function playNote(note) {
-  let i = Math.floor(canvas.height / cellSize) - Math.floor(note.y / cellSize);
+  console.log(note);
+  let i = Math.floor(canvas.height / cellSize) - Math.floor(note.y / cellSize) - 1;
   let duration = timescale[1] / bpm / (timescale[0] * timescale[1]) * Math.floor(note.width / cellSize) * 60;
+  console.log(duration, frequencies[i]);
   playSine(frequencies[i], duration);
 }
 
@@ -61,7 +65,7 @@ function play(x=0, played=0) {
     }
   }
   
-  x += cellSize
+  x += cellSize;
   
   if (played < notes.length) {
     setTimeout(function () {
@@ -77,6 +81,18 @@ function getNotesAtPoint(x, y) {
       if (y >= note.y && y <= note.y + note.height) {
         out.push(note);
       }
+    }
+  }
+  return out;
+}
+
+function getLastNote() {
+  out = null;
+  dist = 0;
+  for (let note of notes) {
+    if (note.x + note.width > dist) {
+      dist = note.x + note.width;
+      out = note
     }
   }
   return out;
@@ -100,7 +116,8 @@ function handleMouseEvent(type, e) {
         dragging = note;
         dragOffsetX = Math.floor((note.x - mouseX) / cellSize) * cellSize + cellSize;
         dragOffsetY = Math.floor((note.y - mouseY) / cellSize) * cellSize + cellSize;
-        draggingWidth = Math.abs(note.x + note.width - mouseX) < cellSize / 2
+        draggingWidth = Math.abs(note.x + note.width - mouseX) < cellSize / 2;
+        prevWidth = note.width;
       } else if (e.button == 2) {
         notes.splice(notes.indexOf(note), 1);
       }
@@ -125,6 +142,15 @@ function handleMouseEvent(type, e) {
     if (draggingWidth) {
       
       dragging.width = Math.max((Math.floor(mouseX / cellSize) + 1) * cellSize - dragging.x, cellSize);
+      if (shift && dragging.width != prevWidth) {
+        let diff = dragging.width - prevWidth;
+        for (let note of notes) {
+          if (note.x >= dragging.x + prevWidth) {
+            note.x += diff;
+          }
+        }
+      }
+      prevWidth = dragging.width;
       
     } else {
       dragging.x = Math.floor((mouseX + dragOffsetX) / cellSize) * cellSize;
@@ -139,6 +165,19 @@ function handleMouseEvent(type, e) {
   
 }
 
+function handleKeyEvent(type, e) {
+  if (type == "up") {
+    if (e.key == "Shift") {
+      shift = false;
+    }
+  } else if (type == "down") {
+    if (e.key == "Shift") {
+      shift = true;
+      console.log("yes lads")
+    }
+  }
+}
+
 function drawGrid() {
   
   context.fillStyle = "#EEEEEE";
@@ -151,8 +190,8 @@ function drawGrid() {
     context.strokeStyle = "#DDDDDD";
     context.lineWidth = 1;
     
-    context.moveTo(0, y);
-    context.lineTo(canvas.width, y);
+    context.moveTo(0, y + 0.5);
+    context.lineTo(canvas.width, y + 0.5);
     
     context.stroke();
     
@@ -163,18 +202,18 @@ function drawGrid() {
     context.beginPath();
     
     if (x % (timescale[0] * timescale[1] * cellSize) == 0) {
-      context.strokeStyle = "#888888";
-      context.lineWidth = 4;
+      context.strokeStyle = "#777777";
+      context.lineWidth = 1;
     } else if (x % (timescale[1] * cellSize) == 0) {
-      context.strokeStyle = "#888888";
-      context.lineWidth = 2;
-    } else {
       context.strokeStyle = "#AAAAAA";
+      context.lineWidth = 1;
+    } else {
+      context.strokeStyle = "#CCCCCC";
       context.lineWidth = 1;
     }
     
-    context.moveTo(x, 0);
-    context.lineTo(x, canvas.height);
+    context.moveTo(x + 0.5, 0);
+    context.lineTo(x + 0.5, canvas.height);
     
     context.stroke();
     
@@ -196,7 +235,7 @@ function getLink() {
   
   for (let note of notes) {
     for (let key in note) {
-      out.push(note[key]);
+      out.push(note[key] / cellSize);
     }
   }
   
@@ -225,8 +264,7 @@ function loadFromParams() {
       }
       note = createNote();
     }
-    note[Object.keys(note)[i % Object.keys(note).length]] = parseInt(values[i]);
-    console.log(Object.keys(note)[i % Object.keys(note).length], values[i]);
+    note[Object.keys(note)[i % Object.keys(note).length]] = parseInt(values[i]) * cellSize;
   }
   notes.push(note);
 }
@@ -246,6 +284,12 @@ function setup() {
   });
   canvas.addEventListener("contextmenu", function (e) {
     e.preventDefault();
+  });
+  window.addEventListener("keydown", function (e) {
+    handleKeyEvent("down", e);
+  });
+  window.addEventListener("keyup", function (e) {
+    handleKeyEvent("up", e);
   });
   
   document.getElementById("play").addEventListener("click", function () {

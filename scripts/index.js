@@ -48,11 +48,11 @@ function drawNotes() {
   }
 }
 
-function playNote(note) {
-  console.log(note);
+function playNote(note, duration) {
   let i = Math.floor(canvas.height / cellSize) - Math.floor(note.y / cellSize) - 1;
-  let duration = timescale[1] / bpm / (timescale[0] * timescale[1]) * Math.floor(note.width / cellSize) * 60;
-  console.log(duration, frequencies[i]);
+  if (!duration) {
+    duration = timescale[1] / bpm / (timescale[0] * timescale[1]) * Math.floor(note.width / cellSize) * 60;
+  }
   playSine(frequencies[i], duration);
 }
 
@@ -99,8 +99,9 @@ function getLastNote() {
 }
 
 function handleMouseEvent(type, e) {
-  mouseX = e.clientX - canvas.offsetLeft;
-  mouseY = e.clientY - canvas.offsetTop;
+  
+  mouseX = e.pageX - canvas.offsetLeft;
+  mouseY = e.pageY - canvas.offsetTop;
   
   if (type == "down" && !dragging) {
     
@@ -118,11 +119,20 @@ function handleMouseEvent(type, e) {
         dragOffsetY = Math.floor((note.y - mouseY) / cellSize) * cellSize + cellSize;
         draggingWidth = Math.abs(note.x + note.width - mouseX) < cellSize / 2;
         prevWidth = note.width;
+        
+        if (draggingWidth) {
+          canvas.style.cursor = "ew-resize";
+        } else {
+          canvas.style.cursor = "all-scroll";
+        }
+        
       } else if (e.button == 2) {
         notes.splice(notes.indexOf(note), 1);
       }
       
     } else if (e.button == 0) {
+      
+      canvas.style.cursor = "all-scroll";
       
       let note = createNote(mouseX, mouseY, lastNoteWidth, cellSize);
       notes.push(note);
@@ -136,6 +146,7 @@ function handleMouseEvent(type, e) {
   } else if (type == "up" && dragging) {
     lastNoteWidth = dragging.width;
     dragging = null;
+    canvas.style.cursor = "auto";
   }
   
   if (dragging) {
@@ -158,7 +169,7 @@ function handleMouseEvent(type, e) {
       if (dragging.x != prevX || dragging.y != prevY) {
         prevX = dragging.x;
         prevY = dragging.y;
-        playNote(dragging);
+        playNote(dragging, 0.25);
       }
     }
   }
@@ -173,7 +184,6 @@ function handleKeyEvent(type, e) {
   } else if (type == "down") {
     if (e.key == "Shift") {
       shift = true;
-      console.log("yes lads")
     }
   }
 }
@@ -201,15 +211,13 @@ function drawGrid() {
     
     context.beginPath();
     
+    context.lineWidth = 1;
     if (x % (timescale[0] * timescale[1] * cellSize) == 0) {
       context.strokeStyle = "#777777";
-      context.lineWidth = 1;
     } else if (x % (timescale[1] * cellSize) == 0) {
       context.strokeStyle = "#AAAAAA";
-      context.lineWidth = 1;
     } else {
       context.strokeStyle = "#CCCCCC";
-      context.lineWidth = 1;
     }
     
     context.moveTo(x + 0.5, 0);
@@ -253,8 +261,6 @@ function loadFromParams() {
   }
   
   const values = param.split(",");
-  
-  console.log(values);
   
   let note;
   for (let i = 0; i < values.length; i++) {

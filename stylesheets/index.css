@@ -1,8 +1,35 @@
 body {
-  margin: 0;
+  font-style: sans-serif;
+  background-color: #BBBBBB;
 }
 
-canvas#pianoroll {
-  left: 0;
-  top: 0;
+#canvascontainer, #controls {
+  border: solid 0.5rem #777777;
+  border-radius: 0.5rem;
+}
+
+#controls {
+  background-color: #777777;
+}
+
+main {
+  display: grid;
+  width: 100%;
+  grid-template-rows: repeat(2, auto);
+  grid-row-gap: 1rem;
+  justify-items: center;
+}
+
+button {
+  border: none;
+  background-color: #EEEEEE;
+  padding: 0.5rem;
+}
+
+button:hover {
+  filter: brightness(110%);
+}
+
+button:active {
+  filter: brightness(90%);
 }

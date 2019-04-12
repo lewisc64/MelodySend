@@ -18,7 +18,12 @@ function playWaveform(func, duration) {
   let source = audioContext.createBufferSource();
   
   source.buffer = buffer;
-  source.connect(audioContext.destination);
+  
+  let gainNode = audioContext.createGain();
+  gainNode.gain.value = 0.2;
+  gainNode.connect(audioContext.destination);
+  
+  source.connect(gainNode);
   source.start();
 }
 

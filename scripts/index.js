@@ -318,7 +318,9 @@ function setup() {
   });
   
   document.getElementById("share").addEventListener("click", function () {
-    alert(getLink());
+    const url = getLink();
+    navigator.clipboard.writeText(url);
+    alert("Copied URL to clipboard.");
   });
   
   editloop();

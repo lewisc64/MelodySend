@@ -72,7 +72,7 @@ function playNote(note, duration) {
 }
 
 function drawPlayLine() {
-  let x = playLineFrom + (playLineTo - playLineFrom) * ((new Date().getTime() - playStart.getTime()) / (playEnd.getTime() - playStart.getTime()));
+  let x = playLineFrom + (playLineTo - playLineFrom) * ((Date.now() - playStart) / (playEnd - playStart));
   if (x < 0 || x > playLineTo) {
     destroyPlayLine()
     return;
@@ -88,10 +88,10 @@ function drawPlayLine() {
 function setupPlayLine(start=0) {
   playLineFrom = start;
   playLine = playLineFrom;
-  playStart = new Date();
+  playStart = Date.now();
   let lastNote = getLastNote();
   playLineTo = lastNote.x + lastNote.width;
-  playEnd = new Date(Date.now() + pixelsToDuration(playLineTo) * 1000);
+  playEnd = Date.now() + pixelsToDuration(playLineTo) * 1000;
 }
 
 function destroyPlayLine() {

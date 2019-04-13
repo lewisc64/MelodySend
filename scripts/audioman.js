@@ -43,3 +43,9 @@ function playSaw(frequency, duration) {
     return ((n % (sampleRate / frequency)) * (frequency / sampleRate) * 2 - 1);
   }, duration); 
 }
+
+function playSquare(frequency, duration) {
+  playWaveform(function (n) {
+    return (n % (sampleRate / frequency)) * (frequency / sampleRate) * 2 - 1 > 0 ? 1 : -1;
+  }, duration); 
+}

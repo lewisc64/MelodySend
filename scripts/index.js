@@ -386,9 +386,9 @@ function loadFromParams() {
   
   const loopparam = urlParams.get("loop");
   if (loopparam != undefined) {
-    loop = loopparam;
+    loop = loopparam === "true";
   }
-  document.getElementById("loop").checked = loop === "true";
+  document.getElementById("loop").checked = loop;
   
   const bpmparam = urlParams.get("bpm");
   if (bpmparam != undefined) {

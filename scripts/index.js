@@ -256,6 +256,9 @@ function handleMouseEvent(type, e) {
         for (let note of notes) {
           if (note.x >= dragging.x + prevWidth) {
             note.x += diff;
+            if (note.x + note.width > canvas.width) {
+              note.x = canvas.width - note.width;
+            }
           }
         }
       }
@@ -264,6 +267,16 @@ function handleMouseEvent(type, e) {
     } else {
       dragging.x = Math.floor((mouseX + dragOffsetX) / cellSize) * cellSize;
       dragging.y = Math.floor((mouseY + dragOffsetY) / cellSize) * cellSize;
+      if (dragging.x < 0) {
+        dragging.x = 0;
+      } else if (dragging.x + dragging.width > canvas.width) {
+        dragging.x = canvas.width - dragging.width;
+      }
+      if (dragging.y < 0) {
+        dragging.y = 0;
+      } else if (dragging.y + dragging.height > canvas.height) {
+        dragging.y = canvas.height - dragging.height;
+      }
       if (dragging.x != prevX || dragging.y != prevY) {
         prevX = dragging.x;
         prevY = dragging.y;

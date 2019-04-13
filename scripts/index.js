@@ -5,6 +5,7 @@ let notes = [];
 let timescale = [4, 4];
 let bpm = 140;
 let playing = false;
+let loop = document.getElementById("loop").checked;
 
 let playLine = null;
 let playLineFrom = null;
@@ -85,12 +86,16 @@ function drawPlayLine() {
   context.stroke();
 }
 
-function setupPlayLine(start=0) {
+function setupPlayLine(start=0, end=undefined) {
   playLineFrom = start;
+  if (end == undefined) {
+    let lastNote = getLastNote();
+    playLineTo = lastNote.x + lastNote.width;
+  } else {
+    playLineTo = end;
+  }
   playLine = playLineFrom;
   playStart = Date.now();
-  let lastNote = getLastNote();
-  playLineTo = lastNote.x + lastNote.width;
   playEnd = Date.now() + pixelsToDuration(playLineTo) * 1000;
 }
 
@@ -105,6 +110,17 @@ function stop() {
   return;
 }
 
+function getEndBar() {
+  const barSize = cellSize * timescale[0] * timescale[1];
+  const end = getEnd();
+  return (Math.floor(end / (barSize)) + Math.min(end % barSize, 1)) * barSize;
+}
+
+function getEnd() {
+  let lastNote = getLastNote();
+  return lastNote.x + lastNote.width;
+}
+
 function play(x=0, end=null) {
   
   if (notes.length == 0) {
@@ -116,9 +132,12 @@ function play(x=0, end=null) {
     if (x == 0) {
       document.getElementById("play").textContent = "Stop";
       playing = true;
-      setupPlayLine();
-      let lastNote = getLastNote();
-      end = lastNote.x + lastNote.width;
+      if (loop) {
+        end = getEndBar();
+      } else {
+        end = getEnd();
+      }
+      setupPlayLine(0, end);
     } else {
       return;
     }
@@ -132,13 +151,17 @@ function play(x=0, end=null) {
   
   x += cellSize;
   
-  if (x <= end) {
-    setTimeout(function () {
-      play(x, end);
-    }, cellsToDuration(1) * 1000);
-  } else {
+  if (x > end) {
     stop();
+    if (loop) {
+      play();
+    }
+    return;
   }
+
+  setTimeout(function () {
+    play(x, end);
+  }, cellsToDuration(1) * 1000);
 }
 
 function togglePlay() {
@@ -255,6 +278,8 @@ function handleKeyEvent(type, e) {
   if (type == "up") {
     if (e.key == "Shift") {
       shift = false;
+    } else if (e.key == " ") {
+      togglePlay();
     }
   } else if (type == "down") {
     if (e.key == "Shift") {
@@ -371,6 +396,10 @@ function setup() {
   
   document.getElementById("play").addEventListener("click", function () {
     togglePlay();
+  });
+  
+  document.getElementById("loop").addEventListener("change", function (e) {
+    loop = e.target.checked;
   });
   
   document.getElementById("reset").addEventListener("click", function () {

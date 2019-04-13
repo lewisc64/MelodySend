@@ -1,6 +1,6 @@
 let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const sampleRate = audioContext.sampleRate;
-const channels = 2;
+const channels = 1;
 
 function playWaveform(func, duration, volume=0.2, fadepadding=0.025) {
   
@@ -32,13 +32,13 @@ function playWaveform(func, duration, volume=0.2, fadepadding=0.025) {
   source.start();
 }
 
-async function playSine(frequency, duration) {
+function playSine(frequency, duration) {
   playWaveform(function (n) {
     return Math.sin(n * 2 * Math.PI * frequency / sampleRate);
   }, duration); 
 }
 
-async function playSaw(frequency, duration) {
+function playSaw(frequency, duration) {
   playWaveform(function (n) {
     return ((n % (sampleRate / frequency)) * (frequency / sampleRate) * 2 - 1);
   }, duration); 

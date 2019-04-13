@@ -1,6 +1,7 @@
 body {
   font-family: sans-serif;
   background-color: #BBBBBB;
+  color: white;
 }
 
 #repolink {
@@ -27,6 +28,7 @@ main > * {
 button {
   border: none;
   background-color: #EEEEEE;
+  color: black;
   padding: 0.5rem;
 }
 

@@ -106,6 +106,7 @@ function destroyPlayLine() {
 function stop() {
   playing = false;
   document.getElementById("play").textContent = "Play";
+  enableInputs();
   destroyPlayLine();
   return;
 }
@@ -131,6 +132,7 @@ function play(x=0, end=null) {
   if (!playing) {
     if (x == 0) {
       document.getElementById("play").textContent = "Stop";
+      disableInputs();
       playing = true;
       if (loop) {
         end = getEndBar();
@@ -351,6 +353,16 @@ function editloop() {
   }
   
   requestAnimationFrame(editloop);
+}
+
+function disableInputs() {
+  document.getElementById("bpm").disabled = true;
+  document.getElementById("loop").disabled = true;
+}
+
+function enableInputs() {
+  document.getElementById("bpm").disabled = false;
+  document.getElementById("loop").disabled = false;
 }
 
 function getLink() {

@@ -39,3 +39,7 @@ button:hover {
 button:active {
   filter: brightness(90%);
 }
+
+#bpm {
+  width: 3rem;
+}

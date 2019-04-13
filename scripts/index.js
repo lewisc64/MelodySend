@@ -5,7 +5,7 @@ let notes = [];
 let timescale = [4, 4];
 let bpm = 140;
 let playing = false;
-let loop = document.getElementById("loop").checked;
+let loop = false;
 
 let playLine = null;
 let playLineFrom = null;
@@ -363,7 +363,7 @@ function getLink() {
     out.push(note.width / cellSize);
   }
   
-  return window.location.href.split("?")[0] + "?notes=" + encodeURI(out.join(","));
+  return window.location.href.split("?")[0] + "?notes=" + encodeURI(out.join(",") + "&loop=" + loop + "&bpm=" + bpm);
 }
 
 function loadFromParams() {
@@ -371,12 +371,25 @@ function loadFromParams() {
   notes = [];
   
   const urlParams = new URLSearchParams(window.location.search);
-  const param = urlParams.get("notes");
-  if (param == null) {
+  
+  const loopparam = urlParams.get("loop");
+  if (loopparam != undefined) {
+    loop = loopparam;
+  }
+  document.getElementById("loop").checked = loop;
+  
+  const bpmparam = urlParams.get("bpm");
+  if (bpmparam != undefined) {
+    bpm = parseInt(bpmparam);
+  }
+  document.getElementById("bpm").value = bpm;
+  
+  const notesparam = urlParams.get("notes");
+  if (notesparam == null) {
     return;
   }
   
-  const values = param.split(",");
+  const values = notesparam.split(",");
   for (let i = 0; i <= values.length - 3; i += 3) {
     
     notes.push(createNote(parseInt(values[i]) * cellSize, parseInt(values[i + 1]) * cellSize, parseInt(values[i + 2]) * cellSize, cellSize));
@@ -409,6 +422,10 @@ function setup() {
   
   document.getElementById("play").addEventListener("click", function () {
     togglePlay();
+  });
+  
+  document.getElementById("bpm").addEventListener("change", function (e) {
+    bpm = parseInt(e.target.value);
   });
   
   document.getElementById("loop").addEventListener("change", function (e) {

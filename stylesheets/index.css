@@ -1,6 +1,22 @@
+:root {
+  --note-color: #00DDDD;
+  --note-color-dark: #008888;
+  --playline-color: #FF0000;
+  --pianoroll-background-color: #EEEEEE;
+  --line-color-cell: #CCCCCC;
+  --line-color-beat: #AAAAAA;
+  --line-color-bar: #777777;
+  
+  --background-color: #BBBBBB;
+  --section-background-color: #777777;
+  --text-color: white;
+  --control-background-color: #EEEEEE;
+  --control-text-color: black;
+}
+
 body {
   font-family: sans-serif;
-  background-color: #BBBBBB;
+  background-color: var(--background-color);
   color: white;
 }
 
@@ -20,15 +36,15 @@ main {
 
 main > * {
   display:inline-block;
-  border: solid 0.5rem #777777;
-  background-color: #777777;
+  border: solid 0.5rem var(--section-background-color);
+  background-color: var(--section-background-color);
   border-radius: 0.5rem;
 }
 
 button {
   border: none;
-  background-color: #EEEEEE;
-  color: black;
+  background-color: var(--control-background-color);
+  color: var(--control-text-color);
   padding: 0.5rem;
 }
 
@@ -38,6 +54,17 @@ button:hover {
 
 button:active {
   filter: brightness(90%);
+}
+
+input {
+  border: none;
+  background-color: var(--control-background-color);
+  color: var(--control-text-color);
+  padding: 0.25rem;
+}
+
+label {
+  margin-right: 0.25rem;
 }
 
 #bpm {

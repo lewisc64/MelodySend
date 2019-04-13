@@ -1,19 +1,19 @@
 let canvas = document.getElementById("pianoroll");
 let context = canvas.getContext("2d", { alpha: false });
 
+const cellSize = 14;
+const timescale = [4, 4];
+
 let notes = [];
-let timescale = [4, 4];
 let bpm = 140;
-let playing = false;
 let loop = false;
 
+let playing = false;
 let playLine = null;
 let playLineFrom = null;
 let playLineTo = null;
 let playStart = null;
 let playEnd = null;
-
-let cellSize = 14;
 
 canvas.height = cellSize * frequencies.length;
 canvas.width = cellSize * 4 ** 3;
@@ -30,6 +30,21 @@ let prevX;
 let prevY;
 let prevWidth;
 
+let colors = {};
+
+function loadColorsFromCSS() {
+  let computedStyle = getComputedStyle(document.documentElement);
+  colors = {
+    "note-color": computedStyle.getPropertyValue("--note-color"),
+    "note-color-dark": computedStyle.getPropertyValue("--note-color-dark"),
+    "playline-color": computedStyle.getPropertyValue("--playline-color"),
+    "pianoroll-background-color": computedStyle.getPropertyValue("--pianoroll-background-color"),
+    "line-color-cell": computedStyle.getPropertyValue("--line-color-cell"),
+    "line-color-beat": computedStyle.getPropertyValue("--line-color-beat"),
+    "line-color-bar": computedStyle.getPropertyValue("--line-color-bar"),
+  }
+}
+
 function createNote(x=0, y=0, width=0, height=0) {
   let note = {
     x: x,
@@ -42,8 +57,8 @@ function createNote(x=0, y=0, width=0, height=0) {
 
 function drawNote(note) {
   context.lineWidth = 1;
-  context.fillStyle = "#00DDDD";
-  context.strokeStyle = "#008888";
+  context.fillStyle = colors["note-color"];
+  context.strokeStyle = colors["note-color-dark"];
   context.fillRect(note.x, note.y, note.width, note.height);
   context.fillStyle = context.strokeStyle;
   context.fillRect(note.x + note.width - cellSize / 2, note.y, cellSize / 2, note.height);
@@ -79,7 +94,7 @@ function drawPlayLine() {
     return;
   }
   context.beginPath();
-  context.strokeStyle = "#FF0000";
+  context.strokeStyle = colors["playline-color"];
   context.lineWidth = 1;
   context.moveTo(x + 0.5, 0);
   context.lineTo(x + 0.5, canvas.height);
@@ -305,14 +320,14 @@ function handleKeyEvent(type, e) {
 
 function drawGrid() {
   
-  context.fillStyle = "#EEEEEE";
+  context.fillStyle = colors["pianoroll-background-color"];
   context.fillRect(0, 0, canvas.width, canvas.height);
   
   context.beginPath();
   
   for (let y = 0; y < canvas.height; y += cellSize) {
     
-    context.strokeStyle = "#DDDDDD";
+    context.strokeStyle = colors["line-color-cell"];
     context.lineWidth = 1;
     
     context.moveTo(0, y + 0.5);
@@ -323,9 +338,9 @@ function drawGrid() {
   context.stroke();
   
   const lines = [
-    ["#CCCCCC", cellSize],
-    ["#AAAAAA", cellSize * timescale[1]],
-    ["#777777", cellSize * timescale[1] * timescale[0]],
+    [colors["line-color-cell"], cellSize],
+    [colors["line-color-beat"], cellSize * timescale[1]],
+    [colors["line-color-bar"], cellSize * timescale[1] * timescale[0]],
   ];
   
   for (let line of lines) {
@@ -412,6 +427,7 @@ function loadFromParams() {
 function setup() {
   
   loadFromParams();
+  loadColorsFromCSS();
   
   canvas.addEventListener("mousemove", function (e) {
     handleMouseEvent("move", e);

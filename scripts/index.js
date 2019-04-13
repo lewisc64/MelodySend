@@ -388,7 +388,7 @@ function loadFromParams() {
   if (loopparam != undefined) {
     loop = loopparam;
   }
-  document.getElementById("loop").checked = loop;
+  document.getElementById("loop").checked = loop === "true";
   
   const bpmparam = urlParams.get("bpm");
   if (bpmparam != undefined) {

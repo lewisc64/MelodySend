@@ -182,8 +182,15 @@ function play(x=0, end=null) {
     }
   }
   
-  x += cellSize;
-  
+  let next = getNextNote(x);
+  let wait;
+  if (next == null) {
+    wait = cellSize;
+    x += cellSize;
+  } else {
+    wait = next.x - x;
+    x = next.x;
+  }
   if (x > end) {
     stop();
     if (loop) {
@@ -194,7 +201,7 @@ function play(x=0, end=null) {
 
   setTimeout(function () {
     play(x, end);
-  }, cellsToDuration(1) * 1000 - (Date.now() - stamp));
+  }, pixelsToDuration(wait) * 1000 - (Date.now() - stamp));
 }
 
 function togglePlay() {
@@ -212,6 +219,18 @@ function getNotesAtPoint(x, y) {
       if (y >= note.y && y <= note.y + note.height) {
         out.push(note);
       }
+    }
+  }
+  return out;
+}
+
+function getNextNote(x) {
+  let closestX = null;
+  let out;
+  for (let note of notes) {
+    if (note.x > x && (closestX == null || note.x < closestX)) {
+      out = note;
+      closestX = note.x;
     }
   }
   return out;

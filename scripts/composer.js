@@ -153,6 +153,8 @@ function getEnd() {
 
 function play(x=0, end=null) {
   
+  const stamp = Date.now();
+  
   if (notes.length == 0) {
     stop();
     return;
@@ -192,7 +194,7 @@ function play(x=0, end=null) {
 
   setTimeout(function () {
     play(x, end);
-  }, cellsToDuration(1) * 1000);
+  }, cellsToDuration(1) * 1000 - (Date.now() - stamp));
 }
 
 function togglePlay() {
@@ -309,9 +311,6 @@ function handleMouseEvent(type, e) {
         for (let note of notes) {
           if (note.x >= dragging.x + prevWidth) {
             note.x += diff;
-            if (note.x + note.width > canvas.width) {
-              note.x = canvas.width - note.width;
-            }
           }
         }
       }

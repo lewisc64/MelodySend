@@ -20,10 +20,45 @@ body {
   color: white;
 }
 
-#repolink {
+#openhelp, #repolink {
   position: fixed;
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  margin: 0;
+  cursor: pointer;
+}
+
+#openhelp {
+  left: 1rem;
+  top: 1rem;
+  border-radius: 32px;
+  border: solid white 2px;
+  text-align: center;
+}
+
+#repolink {
   right: 1rem;
   top: 1rem;
+}
+
+#help {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+}
+
+#help > button#closehelp {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 2rem;
+}
+
+#controls > h1 {
+  margin: 0;
 }
 
 main {
@@ -34,7 +69,7 @@ main {
   justify-items: center;
 }
 
-main > * {
+main > *, #help {
   display:inline-block;
   border: solid 0.5rem var(--section-background-color);
   background-color: var(--section-background-color);
@@ -42,6 +77,7 @@ main > * {
 }
 
 button {
+  cursor: pointer;
   border: none;
   background-color: var(--control-background-color);
   color: var(--control-text-color);

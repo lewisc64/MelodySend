@@ -57,8 +57,26 @@ body {
   border-radius: 2rem;
 }
 
+#controls {
+  text-align: center;
+}
+
+#controls > section {
+  margin-top: 1rem;
+}
+
 #controls > h1 {
   margin: 0;
+}
+
+#timecontainer {
+  display: inline-grid;
+  width: 2rem;
+  grid-template-rows: repeat(2, auto);
+}
+
+#timecontainer > * {
+  width: 2rem;
 }
 
 main {

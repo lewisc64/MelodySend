@@ -2,7 +2,8 @@ let canvas = document.getElementById("pianoroll");
 let context = canvas.getContext("2d", { alpha: false });
 
 const cellSize = 14;
-const timescale = [4, 4];
+let noteLength = 16; // in cells
+let time = [4, 4];
 
 let notes = [];
 let bpm = 140;
@@ -25,7 +26,7 @@ let draggingWidth = false;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
 let shift = false;
-let lastNoteWidth = cellSize * timescale[1];
+let lastNoteWidth = cellSize * time[1];
 let prevX;
 let prevY;
 let prevWidth;
@@ -80,8 +81,16 @@ function drawNotes() {
   }
 }
 
+function getBeatLength() {
+  return noteLength / time[1];
+}
+
+function beatsToDuration(beats) {
+  return beats / bpm * 60
+}
+
 function cellsToDuration(cells) {
-  return timescale[1] / bpm / (timescale[0] * timescale[1]) * 60 * cells;
+  return beatsToDuration(cells / getBeatLength());
 }
 
 function pixelsToDuration(pixels) {
@@ -102,7 +111,7 @@ function getPlayLineX() {
 }
 
 function drawPlayLine() {
-  let x = getPlayLineX();
+  let x = parseInt(getPlayLineX());
   if (x < 0 || x > playLineTo) {
     destroyPlayLine()
     return;
@@ -141,7 +150,7 @@ function stop() {
 }
 
 function getEndBar() {
-  const barSize = cellSize * timescale[0] * timescale[1];
+  const barSize = noteLength / time[1] * time[0] * cellSize;
   const end = getEnd();
   return (Math.floor(end / (barSize)) + Math.min(end % barSize, 1)) * barSize;
 }
@@ -389,10 +398,12 @@ function drawGrid() {
   
   context.stroke();
   
+  const beatLength = cellSize * getBeatLength();
+  
   const lines = [
     [colors["line-color-cell"], cellSize],
-    [colors["line-color-beat"], cellSize * timescale[1]],
-    [colors["line-color-bar"], cellSize * timescale[1] * timescale[0]],
+    [colors["line-color-beat"], beatLength],
+    [colors["line-color-bar"], beatLength * time[0]],
   ];
   
   for (let line of lines) {
@@ -433,14 +444,18 @@ function editloop() {
   requestAnimationFrame(editloop);
 }
 
+const inputIDs = ["bpm", "loop", "time1", "time2"];
+
 function disableInputs() {
-  document.getElementById("bpm").disabled = true;
-  document.getElementById("loop").disabled = true;
+  for (let id of inputIDs) {
+    document.getElementById(id).disabled = true;
+  }
 }
 
 function enableInputs() {
-  document.getElementById("bpm").disabled = false;
-  document.getElementById("loop").disabled = false;
+  for (let id of inputIDs) {
+    document.getElementById(id).disabled = false;
+  }
 }
 
 function getLink() {
@@ -453,7 +468,7 @@ function getLink() {
     out.push(note.width / cellSize);
   }
   
-  return window.location.href.split("?")[0] + "?notes=" + encodeURI(out.join(",") + "&loop=" + loop + "&bpm=" + bpm);
+  return window.location.href.split("?")[0] + "?notes=" + encodeURI(out.join(",") + "&loop=" + loop + "&bpm=" + bpm + "&time=" + time.join(","));
 }
 
 function loadFromParams() {
@@ -475,6 +490,13 @@ function loadFromParams() {
   }
   document.getElementById("bpm").value = bpm;
   
+  const times = urlParams.get("time");
+  if (times != undefined) {
+    updateTime(...times.split(","));
+  } else {
+    updateTime(...time);
+  }
+  
   const notesparam = urlParams.get("notes");
   if (notesparam == null) {
     return;
@@ -486,6 +508,21 @@ function loadFromParams() {
     notes.push(createNote(parseInt(values[i]) * cellSize, parseInt(values[i + 1]) * cellSize, parseInt(values[i + 2]) * cellSize, cellSize));
     
   }
+}
+
+function updateTime(time1, time2) {
+  const timebox1 = document.getElementById("time1");
+  const timebox2 = document.getElementById("time2");
+  if (time1 == null || time2 == null) {
+    time1 = parseInt(timebox1.value);
+    time2 = parseInt(timebox2.value);
+  }
+  timebox1.value = time1;
+  timebox2.value = time2;
+  if (time1 != NaN && time2 != NaN && time1 >= 1 && time2 >= 1) {
+    time = [parseInt(time1), parseInt(time2)];
+  }
+  
 }
 
 function setupPianoroll() {
@@ -512,20 +549,8 @@ function setupPianoroll() {
     handleKeyEvent("up", e);
   });
   
-  document.getElementById("play").addEventListener("click", function () {
-    togglePlay();
-  });
-  
-  document.getElementById("bpm").addEventListener("change", function (e) {
-    bpm = parseInt(e.target.value);
-  });
-  
   document.getElementById("loop").addEventListener("change", function (e) {
     loop = e.target.checked;
-  });
-  
-  document.getElementById("reset").addEventListener("click", function () {
-    loadFromParams();
   });
   
   document.getElementById("share").addEventListener("click", function () {
@@ -533,6 +558,15 @@ function setupPianoroll() {
     navigator.clipboard.writeText(url);
     alert("Copied URL to clipboard.");
   });
+  
+  document.getElementById("play").addEventListener("click", togglePlay);
+  document.getElementById("reset").addEventListener("click", loadFromParams);
+  
+  document.getElementById("bpm").addEventListener("change", function (e) {
+    bpm = parseInt(e.target.value);
+  });
+  document.getElementById("time1").addEventListener("change", updateTime);
+  document.getElementById("time2").addEventListener("change", updateTime);
   
   editloop();
   

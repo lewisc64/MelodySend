@@ -14,16 +14,23 @@
 <main>
   
   <div id=canvascontainer>
-    <canvas id=pianoroll ></canvas>
+    <canvas id=pianoroll></canvas>
   </div>
 
   <section id=controls>
 
     <button id=play>Play</button>
-    <label for=bpm>BPM</label><input type=number id=bpm></input>
     <input type=checkbox id=loop></input><label for=loop>Loop</label>
     <button id=reset>Reset</button>
     <button id=share>Share</button>
+    <section>
+      <label for=bpm>BPM</label><input type=number id=bpm></input>
+      <label for=time>TIME</label>
+      <div id=timecontainer>
+        <input type=number id=time1></input>
+        <input type=number id=time2></input>
+      </div>
+    </section>
 
   </section>
 
@@ -32,6 +39,11 @@
 <section id=help>
 
   <button id=closehelp>X</button>
+  
+  <h1>Help</h1>
+  
+  <p>
+    Number of beats in a bar will be automatically set to the second number of the time signature.
 
   <h1>Controls</h1>
 

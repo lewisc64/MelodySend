@@ -544,8 +544,6 @@ function loadFromParams() {
   const values = notesparam.split(",");
   for (let i = 0; i <= values.length - 3; i += 3) {
     const x = parseInt(values[i]) * cellSize;
-    console.log(values[i + 2])
-    console.log(getNoteIndex(values[i + 2]));
     const y = (noteIndexRange - (getNoteIndex(values[i + 2].replace("s", "#")) - lowestNoteIndex)) * cellSize;
     const width = parseInt(values[i + 1]) * cellSize;
     const height = cellSize

@@ -238,7 +238,8 @@ function togglePlay() {
 
 function getNotesAtPoint(x, y) {
   let out = []
-  for (let note of notes) {
+  for (let i = notes.length - 1; i >= 0; i--) {
+    const note = notes[i];
     if (x >= note.x && x <= note.x + note.width) {
       if (y >= note.y && y <= note.y + note.height) {
         out.push(note);
@@ -258,6 +259,11 @@ function getNextNote(x) {
     }
   }
   return out;
+}
+
+function moveToEnd(array, i) {
+  const item = array.splice(i, 1)[0];
+  array.push(item);
 }
 
 function getLastNote() {
@@ -351,13 +357,20 @@ function handleMouseEvent(type, e) {
     if (draggingWidth) {
       
       dragging.width = Math.max((Math.floor(mouseX / cellSize) + 1) * cellSize - dragging.x, cellSize);
-      if (shift && dragging.width != prevWidth) {
-        let diff = dragging.width - prevWidth;
-        for (let note of notes) {
-          if (note.x >= dragging.x + prevWidth) {
-            note.x += diff;
+      
+      if (dragging.width != prevWidth) {
+        
+        moveToEnd(notes, notes.indexOf(dragging));
+        
+        if (shift && dragging.width != prevWidth) {
+          let diff = dragging.width - prevWidth;
+          for (let note of notes) {
+            if (note.x >= dragging.x + prevWidth) {
+              note.x += diff;
+            }
           }
         }
+        
       }
       prevWidth = dragging.width;
       
@@ -376,6 +389,7 @@ function handleMouseEvent(type, e) {
         prevX = dragging.x;
         prevY = dragging.y;
         updateNote(dragging);
+        moveToEnd(notes, notes.indexOf(dragging));
         playNote(dragging, 0.25);
       }
     }

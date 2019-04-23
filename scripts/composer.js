@@ -1,6 +1,10 @@
 let canvas = document.getElementById("pianoroll");
 let context = canvas.getContext("2d", { alpha: false });
 
+const lowestNoteIndex = getNoteIndex("C2");
+const highestNoteIndex = getNoteIndex("B7");
+const noteIndexRange = highestNoteIndex - lowestNoteIndex;
+
 const cellSize = 14;
 let noteLength = 16; // in cells
 let time = [4, 4];
@@ -16,7 +20,7 @@ let playLineTo = null;
 let playStart = null;
 let playEnd = null;
 
-canvas.height = cellSize * frequencies.length;
+canvas.height = cellSize * 49;
 canvas.width = cellSize * 4 ** 3;
 
 let mouseX;
@@ -35,8 +39,10 @@ let draggingCanvas = false;
 let grabPointX;
 let grabPointY;
 let prevScrollX;
+let prevScrollY;
 
 let scrollX = 0;
+let scrollY = 0;
 
 let colors = {};
 
@@ -53,6 +59,11 @@ function loadColorsFromCSS() {
   }
 }
 
+function updateNote(note) {
+  note.name = getNoteFromIndex(highestNoteIndex - Math.floor(note.y / cellSize));
+  note.frequency = getFrequency(note.name);
+}
+
 function createNote(x=0, y=0, width=0, height=0) {
   let note = {
     x: x,
@@ -60,6 +71,7 @@ function createNote(x=0, y=0, width=0, height=0) {
     width: width,
     height: height,
   }
+  updateNote(note);
   return note
 }
 
@@ -67,10 +79,14 @@ function drawNote(note) {
   context.lineWidth = 1;
   context.fillStyle = colors["note-color"];
   context.strokeStyle = colors["note-color-dark"];
-  context.fillRect(note.x - scrollX, note.y, note.width, note.height);
+  context.fillRect(note.x - scrollX, note.y - scrollY, note.width, note.height);
   context.fillStyle = context.strokeStyle;
-  context.fillRect(note.x - scrollX + note.width - cellSize / 2, note.y, cellSize / 2, note.height);
-  context.strokeRect(note.x - scrollX + 0.5, note.y + 0.5, note.width, note.height);
+  context.fillRect(note.x - scrollX + note.width - cellSize / 2, note.y - scrollY, cellSize / 2, note.height);
+  context.strokeRect(note.x - scrollX + 0.5, note.y - scrollY + 0.5, note.width, note.height);
+  if (note.width >= cellSize * 2) {
+    context.font = (note.height - 4) + "px Consolas";
+    context.fillText(note.name, note.x - scrollX + 2, note.y + note.height - 2 - scrollY); 
+  }
 }
 
 function drawNotes() {
@@ -102,8 +118,7 @@ function playNote(note, duration) {
   if (!duration) {
     duration = pixelsToDuration(note.width);
   }
-  const f = frequencies[i];
-  playWaveform(sineWave(f), duration);
+  playWaveform(sineWave(note.frequency), duration);
 }
 
 function getPlayLineX() {
@@ -260,7 +275,7 @@ function getLastNote() {
 function handleMouseEvent(type, e) {
   
   mouseX = e.pageX - canvas.offsetLeft + scrollX;
-  mouseY = e.pageY - canvas.offsetTop;
+  mouseY = e.pageY - canvas.offsetTop + scrollY;
   
   if (type == "down" && !dragging) {
     
@@ -316,8 +331,9 @@ function handleMouseEvent(type, e) {
       
       draggingCanvas = true;
       grabPointX = mouseX - scrollX;
-      grabPointY = mouseY;
+      grabPointY = mouseY - scrollY;
       prevScrollX = scrollX;
+      prevScrollY = scrollY;
     } else if (type == "up" && draggingCanvas) {
       
       canvas.style.cursor = "auto";
@@ -328,6 +344,7 @@ function handleMouseEvent(type, e) {
   
   if (draggingCanvas) {
     scrollX = Math.max(prevScrollX - (mouseX - scrollX - (grabPointX)), 0);
+    scrollY = Math.min(Math.max(prevScrollY - (mouseY - scrollY - (grabPointY)), 0), (noteIndexRange + 1) * cellSize - canvas.height);
   }
   
   if (dragging) {
@@ -352,12 +369,13 @@ function handleMouseEvent(type, e) {
       }
       if (dragging.y < 0) {
         dragging.y = 0;
-      } else if (dragging.y + dragging.height > canvas.height) {
-        dragging.y = canvas.height - dragging.height;
+      } else if (dragging.y + dragging.height > cellSize * (noteIndexRange + 1)) {
+        dragging.y = cellSize * noteIndexRange;
       }
       if (dragging.x != prevX || dragging.y != prevY) {
         prevX = dragging.x;
         prevY = dragging.y;
+        updateNote(dragging);
         playNote(dragging, 0.25);
       }
     }
@@ -386,13 +404,16 @@ function drawGrid() {
   
   context.beginPath();
   
-  for (let y = 0; y < canvas.height; y += cellSize) {
+  for (let y = -scrollY; y < canvas.height; y += cellSize) {
     
-    context.strokeStyle = colors["line-color-cell"];
-    context.lineWidth = 1;
-    
-    context.moveTo(0, y + 0.5);
-    context.lineTo(canvas.width, y + 0.5);
+    if (y >= 0) {
+      context.strokeStyle = colors["line-color-cell"];
+      context.lineWidth = 1;
+      
+      context.moveTo(0, y + 0.5);
+      context.lineTo(canvas.width, y + 0.5);
+      
+    }
     
   }
   
@@ -464,24 +485,28 @@ function getLink() {
   
   for (let note of notes) {
     out.push(note.x / cellSize);
-    out.push(note.y / cellSize);
     out.push(note.width / cellSize);
+    out.push(note.name.replace("#", "s"));
   }
   
-  return window.location.href.split("?")[0] + "?notes=" + encodeURI(out.join(",") + "&loop=" + loop + "&bpm=" + bpm + "&time=" + time.join(","));
+  return window.location.href.split("?")[0] + "?notes=" + encodeURI(out.join(",") + "&bpm=" + bpm + "&time=" + time.join(","));
 }
 
 function loadFromParams() {
   
   notes = [];
   scrollX = 0;
+  scrollY = 14 * cellSize;
   
   const urlParams = new URLSearchParams(window.location.search);
   
+  /*
   const loopparam = urlParams.get("loop");
   if (loopparam != undefined) {
     loop = loopparam === "true";
   }
+  */
+  loop = false;
   document.getElementById("loop").checked = loop;
   
   const bpmparam = urlParams.get("bpm");
@@ -504,8 +529,13 @@ function loadFromParams() {
   
   const values = notesparam.split(",");
   for (let i = 0; i <= values.length - 3; i += 3) {
-    
-    notes.push(createNote(parseInt(values[i]) * cellSize, parseInt(values[i + 1]) * cellSize, parseInt(values[i + 2]) * cellSize, cellSize));
+    const x = parseInt(values[i]) * cellSize;
+    console.log(values[i + 2])
+    console.log(getNoteIndex(values[i + 2]));
+    const y = (noteIndexRange - (getNoteIndex(values[i + 2].replace("s", "#")) - lowestNoteIndex)) * cellSize;
+    const width = parseInt(values[i + 1]) * cellSize;
+    const height = cellSize
+    notes.push(createNote(x, y, width, height));
     
   }
 }

@@ -399,15 +399,28 @@ function handleMouseEvent(type, e) {
 
 function handleKeyEvent(type, e) {
   if (type == "up") {
+    
     if (e.key == "Shift") {
       shift = false;
     } else if (e.key == " ") {
       togglePlay();
     }
+    
   } else if (type == "down") {
+    
     if (e.key == "Shift") {
       shift = true;
+      
+    } else if (e.key == "ArrowLeft") {
+      scrollX = Math.max(scrollX - cellSize, 0);      
+    } else if (e.key == "ArrowRight") {
+      scrollX = Math.max(scrollX + cellSize, 0);
+    } else if (e.key == "ArrowUp") {
+      scrollY = Math.min(Math.max(scrollY - cellSize, 0), (noteIndexRange + 1) * cellSize - canvas.height);
+    } else if (e.key == "ArrowDown") {
+      scrollY = Math.min(Math.max(scrollY + cellSize, 0), (noteIndexRange + 1) * cellSize - canvas.height);
     }
+    
   }
 }
 

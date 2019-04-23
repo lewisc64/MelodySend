@@ -1,6 +1,8 @@
 let canvas = document.getElementById("pianoroll");
 let context = canvas.getContext("2d", { alpha: false });
 
+let fullscreen = false;
+
 const lowestNoteIndex = getNoteIndex("C2");
 const highestNoteIndex = getNoteIndex("B7");
 const noteIndexRange = highestNoteIndex - lowestNoteIndex;
@@ -402,8 +404,15 @@ function handleKeyEvent(type, e) {
     
     if (e.key == "Shift") {
       shift = false;
+      
     } else if (e.key == " ") {
       togglePlay();
+      e.preventDefault();
+      
+    } else if (e.key == "f") {
+      toggleFullscreen();
+    } else if (e.key == "Escape") {
+      setFullscreen(false);
     }
     
   } else if (type == "down") {
@@ -412,13 +421,17 @@ function handleKeyEvent(type, e) {
       shift = true;
       
     } else if (e.key == "ArrowLeft") {
-      scrollX = Math.max(scrollX - cellSize, 0);      
+      scrollX = Math.max(scrollX - cellSize, 0);   
+      e.preventDefault();
     } else if (e.key == "ArrowRight") {
       scrollX = Math.max(scrollX + cellSize, 0);
+      e.preventDefault();
     } else if (e.key == "ArrowUp") {
       scrollY = Math.min(Math.max(scrollY - cellSize, 0), (noteIndexRange + 1) * cellSize - canvas.height);
+      e.preventDefault();
     } else if (e.key == "ArrowDown") {
       scrollY = Math.min(Math.max(scrollY + cellSize, 0), (noteIndexRange + 1) * cellSize - canvas.height);
+      e.preventDefault();
     }
     
   }
@@ -469,6 +482,28 @@ function drawGrid() {
     context.stroke();
   }
   
+}
+
+function setFullscreen(value) {
+  fullscreen = value;
+  if (fullscreen) {
+    
+    canvas.width = screen.width;
+    canvas.height = screen.height;
+    canvas.requestFullscreen();
+    
+  } else {
+    
+    canvas.width = cellSize * 4 ** 3;
+    canvas.height = cellSize * 49;
+    document.exitFullscreen();
+    
+  }
+  scrollY = (noteIndexRange + 1) * cellSize - canvas.height;
+}
+
+function toggleFullscreen() {
+  setFullscreen(!fullscreen);
 }
 
 function editloop() {

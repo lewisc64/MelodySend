@@ -296,7 +296,7 @@ function handleMouseEvent(type, e) {
       
       let note = hoveredNotes[0];
       if (e.button == 0) {
-        dragging = note;  
+        dragging = note;
         dragOffsetX = -Math.floor((mouseX - note.x) / cellSize) * cellSize;
         dragOffsetY = -Math.floor((mouseY - note.y) / cellSize) * cellSize;
         draggingWidth = Math.abs(note.x + note.width - mouseX) < cellSize / 2;
@@ -625,6 +625,9 @@ function setupPianoroll() {
   });
   canvas.addEventListener("mousedown", function (e) {
     handleMouseEvent("down", e);
+    if (e.detail > 1) {
+      e.preventDefault();
+    }
   });
   canvas.addEventListener("mouseup", function (e) {
     handleMouseEvent("up", e);

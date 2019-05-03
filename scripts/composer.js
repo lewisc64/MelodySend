@@ -296,9 +296,9 @@ function handleMouseEvent(type, e) {
       
       let note = hoveredNotes[0];
       if (e.button == 0) {
-        dragging = note;
-        dragOffsetX = Math.floor((note.x - mouseX) / cellSize) * cellSize + cellSize;
-        dragOffsetY = Math.floor((note.y - mouseY) / cellSize) * cellSize + cellSize;
+        dragging = note;  
+        dragOffsetX = -Math.floor((mouseX - note.x) / cellSize) * cellSize;
+        dragOffsetY = -Math.floor((mouseY - note.y) / cellSize) * cellSize;
         draggingWidth = Math.abs(note.x + note.width - mouseX) < cellSize / 2;
         prevWidth = note.width;
         

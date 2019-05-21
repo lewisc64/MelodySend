@@ -120,7 +120,10 @@ function playNote(note, duration) {
   if (!duration) {
     duration = pixelsToDuration(note.width);
   }
-  playWaveform(sineWave(note.frequency), duration);
+  playWaveform(mixWaves(sawWave(note.frequency / 2), sineWave(note.frequency)), duration);
+  //playWaveform(mixWaves(squareWave(note.frequency / 2), sineWave(note.frequency)), duration);
+  //playWaveform(mixWaves(warbleSineWave(note.frequency / 2), sineWave(note.frequency)), duration);
+  //playWaveform(warbleSineWave(note.frequency), duration);
 }
 
 function getPlayLineX() {

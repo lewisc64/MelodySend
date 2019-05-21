@@ -37,7 +37,20 @@ function playWaveform(func, duration, volume=0.2, fadepadding=0.025) {
   source.start();
 }
 
+function addTremolo(func, frequency=4, fadeSamples=sampleRate) {
+  return function (n) {
+    const m = Math.sin(n * 2 * Math.PI * frequency / sampleRate)
+    return func(n) * (((1 - m) * (1 - Math.min(n, fadeSamples) / fadeSamples)) + m);
+  }
+}
+
 function mixWaves(func1, func2) {
+  return function (n) {
+    return func1(n) * func2(n);
+  }
+}
+
+function addWaves(func1, func2) {
   return function (n) {
     return func1(n) + func2(n);
   }
@@ -46,6 +59,13 @@ function mixWaves(func1, func2) {
 function sineWave(frequency) {
   return function (n) {
     return Math.sin(n * 2 * Math.PI * frequency / sampleRate);
+  }
+}
+
+function warbleSineWave(frequency, warbleFrequency=5, frequencyChangeRatio=0.001) {
+  return function (n) {
+    const f = (frequency + Math.sin(n * 2 * Math.PI * warbleFrequency / sampleRate) * (frequency * frequencyChangeRatio));
+    return Math.sin(n * 2 * Math.PI * f / sampleRate);
   }
 }
 
